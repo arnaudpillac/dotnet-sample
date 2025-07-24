@@ -1,0 +1,10 @@
+name: docker build/push
+
+on: push
+
+jobs:
+  build-docker:
+    uses: locuta/workflows-templates/.github/workflows/build-docker-snapshot.yml@main
+    with:
+      dockerfile: Dockerfile
+      
