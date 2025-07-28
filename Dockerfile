@@ -1,18 +1,21 @@
 # Build stage
 FROM mcr.microsoft.com/dotnet/sdk:6.0 AS build
-WORKDIR /app
+WORKDIR /src
 
-# Copy csproj and restore
-COPY dotnet-thread-test.csproj ./
+# Copy project and restore
+COPY BenchApp.csproj .
 RUN dotnet restore
 
-# Copy the rest of the app
-COPY . ./
-RUN dotnet build -c Release -o out
+# Copy source and build
+COPY . .
+RUN dotnet publish -c Release -o /app/publish --no-restore
 
 # Runtime stage
 FROM mcr.microsoft.com/dotnet/runtime:6.0
 WORKDIR /app
-COPY --from=build /app/out .
 
-ENTRYPOINT ["dotnet", "dotnet-thread-test.dll"]
+# Copy published output
+COPY --from=build /app/publish .
+
+# Run the benchmark app
+ENTRYPOINT ["dotnet", "BenchApp.dll"]
