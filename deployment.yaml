@@ -1,0 +1,29 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: myapp
+spec:
+  selector:
+    matchLabels:
+      app: myapp
+  template:
+    metadata:
+      labels:
+        app: myapp
+    spec:
+      containers:
+      - name: myapp
+        image: ghcr.io/arnaudpillac/dotnet-sample:latest
+        imagePullPolicy: Always
+        env:
+          - name: DOTNET_THREADPOOL_MINTHREADS
+            value: "2"
+          - name: DOTNET_PROCESSOR_COUNT
+            value: "2"
+        resources:
+          requests:
+            memory: "3Gi"
+            cpu: "4"
+          limits:
+            memory: "3Gi"
+            cpu: "4"

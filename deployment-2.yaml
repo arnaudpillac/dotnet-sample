@@ -1,0 +1,35 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: debug
+spec:
+  selector:
+    matchLabels:
+      app: debug
+  template:
+    metadata:
+      labels:
+        app: debug
+    spec:
+      nodeSelector:
+        name: node-transcription
+      runtimeClassName: kata
+      containers:
+      - name: debug
+        image: ubuntu:latest
+        command: 
+          - sleep
+          - infinity
+        imagePullPolicy: Always
+        # env:
+        #   - name: DOTNET_THREADPOOL_MINTHREADS
+        #     value: "2"
+        #   - name: DOTNET_PROCESSOR_COUNT
+        #     value: "2"
+        resources:
+          requests:
+            memory: "3Gi"
+            cpu: "4"
+          limits:
+            memory: "3Gi"
+            cpu: "4"

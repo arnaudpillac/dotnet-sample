@@ -1,0 +1,44 @@
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  name: kata-dns-proxy
+  namespace: kube-system
+spec:
+  selector:
+    matchLabels:
+      name: kata-dns-proxy
+  template:
+    metadata:
+      labels:
+        name: kata-dns-proxy
+    spec:
+      hostNetwork: true
+      containers:
+      - name: dns-proxy
+        image: coredns/coredns:1.10.1
+        ports:
+        - containerPort: 5353
+          protocol: UDP
+        - containerPort: 5353
+          protocol: TCP
+        volumeMounts:
+        - name: config
+          mountPath: /etc/coredns
+        args: ["-conf", "/etc/coredns/Corefile"]
+      volumes:
+      - name: config
+        configMap:
+          name: kata-coredns-config
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: kata-coredns-config
+  namespace: kube-system
+data:
+  Corefile: |
+    .:5353 {
+        forward . 10.96.0.10
+        log
+        errors
+    }
