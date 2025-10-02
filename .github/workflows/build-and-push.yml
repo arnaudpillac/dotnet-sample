@@ -1,27 +1,28 @@
-name: docker build/push
+name: SNAPSHOT build/deploy
 
-on: push
+on:
+  pull_request:
+    branches:
+      - dev
+    types:
+      - closed   # triggers when a PR targeting dev is closed
 
 env:
     dockerfile: Dockerfile
     image_name: ${{ github.repository }}
 
 jobs:
-  docker-snapshot:
-    runs-on: ubuntu-latest
-
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-      - name: Log in to GitHub Container Registry
-        uses: docker/login-action@v3
-        with:
-          registry: ghcr.io
-          username: ${{ github.actor }}
-          password: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Build image
-        run: docker build -f ${{ env.dockerfile }} --tag ghcr.io/${{ env.image_name }}:latest .
-
-      - name: Push Docker Image to GHCR
-        run: docker push ghcr.io/${{ env.image_name }}:latest
+  build-docker:
+    if: github.event.pull_request.merged == true
+    uses: locuta/workflows-templates/.github/workflows/build-docker-snapshot.yml@feat/flux-sync-ci
+    with:
+      dockerfile: Dockerfile
+  
+  deploy:
+    needs: 
+      - build-docker
+    uses: locuta/workflows-templates/.github/workflows/deploy-gitops-dev.yml@feat/flux-sync-ci
+    with:
+      gitops_path: apps/base/arnaud
+    secrets:
+      CI_BOT_TOKEN: ${{ secrets.CI_BOT_TOKEN }}
